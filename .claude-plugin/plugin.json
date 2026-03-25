@@ -1,0 +1,5 @@
+{
+  "name": "claude-dev-workflow",
+  "description": "Enforces the two-phase GitHub issue workflow: Analyse then Develop, with automatic status updates and progress comments.",
+  "author": { "name": "Lead" }
+}
