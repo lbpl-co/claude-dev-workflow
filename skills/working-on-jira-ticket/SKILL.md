@@ -238,10 +238,16 @@ curl -s -X POST \
   "body": {
     "type": "doc",
     "version": 1,
-    "content": [{
-      "type": "paragraph",
-      "content": [{"type": "text", "text": "## Implementation Complete\n\n**PR:** <Bitbucket PR URL>\n\n**What changed:**\n- <bullet 1>\n- <bullet 2>\n\n**Tests:** <N> passing"}]
-    }]
+    "content": [
+      {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Implementation Complete"}]},
+      {"type": "paragraph", "content": [{"type": "text", "text": "PR: <Bitbucket PR URL>"}]},
+      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "What changed"}]},
+      {"type": "bulletList", "content": [
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "<bullet 1>"}]}]},
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "<bullet 2>"}]}]}
+      ]},
+      {"type": "paragraph", "content": [{"type": "text", "text": "Tests: <N> passing"}]}
+    ]
   }
 }
 PAYLOAD
