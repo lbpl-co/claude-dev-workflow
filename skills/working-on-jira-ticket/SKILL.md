@@ -34,6 +34,15 @@ Accept any of:
 
 Extract the project key and ticket number. The JIRA base URL comes from the `JIRA_BASE_URL` environment variable (e.g. `https://myorg.atlassian.net`).
 
+Before proceeding, verify both required environment variables are set:
+
+```bash
+: "${JIRA_TOKEN:?JIRA_TOKEN is not set. Get an API token from Atlassian account settings → Security → API tokens.}"
+: "${JIRA_BASE_URL:?JIRA_BASE_URL is not set. Set it to e.g. https://myorg.atlassian.net}"
+```
+
+If either is missing, stop and show the error message to the user.
+
 ---
 
 ## Step 2 — Detect phase
@@ -41,15 +50,24 @@ Extract the project key and ticket number. The JIRA base URL comes from the `JIR
 Read existing comments on the ticket via JIRA REST API:
 
 ```bash
-curl -s \
+RESPONSE=$(curl -s -w "\n%{http_code}" \
   -H "Authorization: Bearer $JIRA_TOKEN" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment?orderBy=created" \
+  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment?orderBy=created")
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" != "200" ]; then
+  echo "ERROR: Could not read JIRA comments (HTTP $HTTP_CODE). Check JIRA_TOKEN and ticket key."
+  exit 1
+fi
+
+ANALYSIS_COUNT=$(echo "$BODY" \
   | jq -r '.comments[].body.content[0].content[0].text // empty' \
-  | grep -c "^## Analysis"
+  | grep -c "^## Analysis")
 ```
 
-- Result is 0 → **Phase 1**
-- Result is 1+ → **Phase 2**
+- `ANALYSIS_COUNT` is 0 → **Phase 1**
+- `ANALYSIS_COUNT` is 1+ → **Phase 2**
 
 ---
 
@@ -66,13 +84,15 @@ curl -s \
       description: .fields.description,
       status: .fields.status.name,
       priority: .fields.priority.name,
-      storyPoints: .fields.story_points,
+      storyPoints: (.fields.customfield_10028 // .fields.story_points // null),
       sprint: .fields.sprint.name,
       labels: .fields.labels,
       linkedIssues: [.fields.issuelinks[] | {type: .type.name, key: (.inwardIssue.key // .outwardIssue.key)}],
       acceptanceCriteria: .fields.customfield_10016
     }'
 ```
+
+Note: Story points field ID varies by JIRA instance — commonly `customfield_10028`. If storyPoints returns null, ask your JIRA admin for the correct custom field ID.
 
 Also read existing comments:
 ```bash
@@ -102,16 +122,32 @@ curl -s -X POST \
   "body": {
     "type": "doc",
     "version": 1,
-    "content": [{
-      "type": "paragraph",
-      "content": [{"type": "text", "text": "## Analysis\n\n**Scope:** <files, components, APIs affected>\n\n**Approach:** <how we plan to solve it — key decisions, alternatives considered>\n\n**AC coverage:**\n- AC1: <how it will be met>\n- AC2: <how it will be met>\n\n**Files to change:**\n- `path/to/file.ts` — <reason>\n\n**Risks / open questions:**\n- <unknowns, edge cases, things needing human input>"}]
-    }]
+    "content": [
+      {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Analysis"}]},
+      {"type": "paragraph", "content": [{"type": "text", "text": "Scope: <files, components, APIs affected>"}]},
+      {"type": "paragraph", "content": [{"type": "text", "text": "Approach: <how we plan to solve it — key decisions, alternatives considered>"}]},
+      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "AC coverage"}]},
+      {"type": "bulletList", "content": [
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "AC1: <how it will be met>"}]}]},
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "AC2: <how it will be met>"}]}]}
+      ]},
+      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Files to change"}]},
+      {"type": "bulletList", "content": [
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "path/to/file.ts — <reason>"}]}]}
+      ]},
+      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Risks / open questions"}]},
+      {"type": "bulletList", "content": [
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "<unknowns, edge cases, things needing human input>"}]}]}
+      ]}
+    ]
   }
 }
 PAYLOAD
 )" \
   "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
 ```
+
+Note: When constructing the actual comment, replace each placeholder in the ADF `text` nodes with real content. Do not embed markdown inside `text` nodes — use proper ADF structure (headings, bulletList, listItem) for formatted output.
 
 ### 1d. Transition ticket → In Progress
 
@@ -169,9 +205,9 @@ curl -s -X POST \
   "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
 ```
 
-### 2c. Implement
+### 2c. Invoke test-driven-development
 
-Use the `superpowers:test-driven-development` skill. Write tests first, then implementation.
+Invoke the `superpowers:test-driven-development` skill. This is a mandatory step — do not write implementation code without it.
 
 ### 2d. Post milestone comments
 
