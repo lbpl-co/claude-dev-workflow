@@ -46,7 +46,7 @@ git remote show origin 2>/dev/null | grep "HEAD branch" | awk '{print $NF}' || e
 
 ## Step 2 — JIRA ticket
 
-**If invoked by `working-on-jira-ticket`:** ticket ID is already known (passed as context). Skip this step.
+**If invoked by `working-on-jira-ticket`:** the ticket ID (`PROJ-123` or similar) is already present in the conversation context from the parent skill. Use the same ticket key that has been referenced throughout the current conversation. Skip the user prompt and proceed directly to Step 3.
 
 **If invoked standalone:** ask the user:
 ```

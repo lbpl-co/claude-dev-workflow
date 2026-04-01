@@ -85,7 +85,7 @@ curl -s \
       status: .fields.status.name,
       priority: .fields.priority.name,
       storyPoints: (.fields.customfield_10028 // .fields.story_points // null),
-      sprint: .fields.sprint.name,
+      sprint: (.fields.customfield_10020[-1].name // .fields.sprint.name // null),
       labels: .fields.labels,
       linkedIssues: [.fields.issuelinks[] | {type: .type.name, key: (.inwardIssue.key // .outwardIssue.key)}],
       acceptanceCriteria: .fields.customfield_10016
@@ -93,6 +93,7 @@ curl -s \
 ```
 
 Note: Story points field ID varies by JIRA instance — commonly `customfield_10028`. If storyPoints returns null, ask your JIRA admin for the correct custom field ID.
+Note: Sprint data is commonly stored in `customfield_10020` on JIRA Cloud. If sprint returns null, check your JIRA instance's custom field IDs.
 
 Also read existing comments:
 ```bash
@@ -106,10 +107,11 @@ Note: `customfield_10016` is a common field ID for acceptance criteria — adjus
 
 ### 1b. Explore codebase
 
-Launch an Explore subagent focused on areas mentioned in the ticket summary, description, and acceptance criteria. Look for:
-- Files directly mentioned
-- Related components, services, hooks, utilities
-- Existing patterns to reuse or extend
+Use the `Agent` tool with `subagent_type: "Explore"` and a prompt that includes:
+- The ticket summary, key acceptance criteria, and any file names mentioned in the description
+- Instructions to find: files directly mentioned, related components/services/hooks/utilities, existing patterns to reuse or extend
+
+The Explore subagent should return a list of relevant files and a brief description of how each relates to the ticket. Use this output to inform the analysis comment in step 1c.
 
 ### 1c. Post analysis comment
 
@@ -149,6 +151,8 @@ PAYLOAD
 
 Note: When constructing the actual comment, replace each placeholder in the ADF `text` nodes with real content. Do not embed markdown inside `text` nodes — use proper ADF structure (headings, bulletList, listItem) for formatted output.
 
+If the response contains `"errorMessages"` or the HTTP status is not 201, stop and report the error to the user before proceeding.
+
 ### 1d. Transition ticket → In Progress
 
 First, get available transitions:
@@ -167,6 +171,8 @@ curl -s -X POST \
   -d '{"transition": {"id": "<transition-id>"}}' \
   "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/transitions"
 ```
+
+If the transition POST fails (non-204 response or `"errorMessages"` in body), report the error but continue — a failed status transition should not block implementation.
 
 ### 1e. STOP
 
@@ -204,6 +210,8 @@ curl -s -X POST \
   -d '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "🚧 Starting implementation on branch `feature/PROJ-123-short-description`."}]}]}}' \
   "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
 ```
+
+If this POST fails, note it but continue — a failed start comment should not block implementation.
 
 ### 2c. Invoke test-driven-development
 
