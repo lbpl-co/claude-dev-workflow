@@ -1,19 +1,57 @@
 # claude-dev-workflow
 
-A Claude Code plugin that enforces a two-phase GitHub issue workflow:
-**Analyse first, then Develop** — keeping issues well-maintained throughout.
+A Claude Code plugin that enforces disciplined developer workflows: two-phase issue/ticket analysis before coding, structured Bitbucket PRs, and inline PR review.
 
-## What it does
+## Skills
 
-When Claude works on a GitHub issue, this plugin ensures:
+### `working-on-github-issue`
+Two-phase GitHub issue workflow (Analyse → Develop). Keeps GitHub Issues and project boards up to date.
 
-1. **Phase 1 — Analyse**: Claude reads the issue, explores the codebase, posts an `## Analysis` comment to GitHub, sets the project board status to `In Develop`, then **stops and waits** for your go-ahead.
+**Trigger:** "Work on issue #295"
 
-2. **Phase 2 — Develop**: After you say "develop", Claude creates a branch, implements with TDD, posts milestone progress comments, takes screenshots for UI changes, creates a PR with `Closes #N`, posts a completion summary, and sets status to `In Review`.
+**Requirements:**
+- `gh` CLI authenticated (`gh auth login`)
+- `GITHUB_TOKEN` env var set
+- Issue must be on a GitHub Projects board
 
-## Why
+---
 
-Without discipline, Claude jumps straight to coding with no visibility for the team, leaves issue boards stale, and loses the audit trail that comments provide.
+### `working-on-jira-ticket`
+Two-phase JIRA ticket workflow (Analyse → Develop). Reads all ticket fields, posts analysis + milestone comments to JIRA, creates a Bitbucket PR at the end.
+
+**Trigger:** "Work on PROJ-123" or "pick up ticket PROJ-123"
+
+**Requirements:**
+- `JIRA_TOKEN` — JIRA API token (Atlassian account settings → Security → API tokens)
+- `JIRA_BASE_URL` — e.g. `https://myorg.atlassian.net`
+- `BITBUCKET_TOKEN` — Bitbucket App Password with `pullrequest:write` scope
+- `jq` installed
+
+---
+
+### `create-pr`
+Creates a structured Bitbucket pull request from the current branch. Generates title, description, and test plan checklist. Optionally links a JIRA ticket.
+
+**Trigger:** "Create a PR" or "open a PR"
+
+**Requirements:**
+- `BITBUCKET_TOKEN` — Bitbucket App Password with `pullrequest:write` scope
+- `JIRA_BASE_URL` — only needed if linking a JIRA ticket
+- `jq` installed
+
+---
+
+### `review-pr`
+Reviews a Bitbucket PR. Fetches diff via Bitbucket MCP, produces a structured terminal review (blocking issues, suggestions, nits, verdict), then optionally posts inline comments to Bitbucket.
+
+**Trigger:** "Review PR 42" or "Review https://bitbucket.org/.../pull-requests/42"
+
+**Requirements:**
+- `BITBUCKET_TOKEN` — Bitbucket App Password with `pullrequest:write` scope
+- Bitbucket MCP configured
+- `jq` installed
+
+---
 
 ## Install
 
@@ -21,22 +59,19 @@ Without discipline, Claude jumps straight to coding with no visibility for the t
 claude plugin install github:lbpl-co/claude-dev-workflow
 ```
 
-## Usage
+## Environment variables
 
+| Variable | Used by | Description |
+|----------|---------|-------------|
+| `GITHUB_TOKEN` | `working-on-github-issue` | GitHub PAT for uploading screenshots |
+| `JIRA_TOKEN` | `working-on-jira-ticket` | JIRA API token |
+| `JIRA_BASE_URL` | `working-on-jira-ticket`, `create-pr` | e.g. `https://myorg.atlassian.net` |
+| `BITBUCKET_TOKEN` | `create-pr`, `review-pr`, `working-on-jira-ticket` | Bitbucket App Password |
+
+Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
+```bash
+export JIRA_TOKEN="your-token"
+export JIRA_BASE_URL="https://myorg.atlassian.net"
+export BITBUCKET_TOKEN="your-token"
+export GITHUB_TOKEN="your-token"
 ```
-You: Work on issue #295
-Claude: [reads issue, explores code, posts analysis comment, sets status, stops]
-
-You: develop
-Claude: [creates branch, implements, posts progress, creates PR, posts completion]
-```
-
-## Skills included
-
-- **`working-on-github-issue`** — the two-phase issue workflow skill
-
-## Requirements
-
-- `gh` CLI authenticated (`gh auth login`)
-- `GITHUB_TOKEN` env var set (for screenshot uploads via GitHub assets API)
-- Issue must be on a GitHub Projects board for status updates to work
