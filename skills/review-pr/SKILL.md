@@ -31,6 +31,8 @@ mcp__bitbucket-mcp__bb_get_pull_request_diff   → full unified diff
 mcp__bitbucket-mcp__bb_get_pull_request_comments → existing comments (avoid duplicating feedback)
 ```
 
+If any MCP tool returns an error (e.g. PR not found), report the error to the user and stop. Do not proceed with an empty or partial diff.
+
 ---
 
 ## Step 3 — Analyse
@@ -76,6 +78,10 @@ If there are no issues or suggestions, say so explicitly rather than leaving sec
 
 ## Step 5 — Ask to post
 
+Before posting, verify `BITBUCKET_TOKEN` is set. If it is not set or empty, tell the user:
+"BITBUCKET_TOKEN is not set. Set it to a Bitbucket App Password with `pullrequest:write` scope, then re-run."
+Stop.
+
 ```
 Post these comments to Bitbucket? (y/n)
 ```
@@ -111,10 +117,12 @@ curl -s -X POST \
   "https://api.bitbucket.org/2.0/repositories/<workspace>/<repo-slug>/pullrequests/<PR_ID>/comments"
 ```
 
+After each curl call, inspect the response. If it contains `"type":"error"` or the HTTP status is not 2xx, report the error message to the user and stop posting further comments.
+
 ---
 
 ## Requirements
 
 - `BITBUCKET_TOKEN` — Bitbucket App Password with `pullrequest:write` scope
 - Bitbucket MCP configured and authenticated
-- `jq` installed (`brew install jq`)
+- `jq` installed (`brew install jq`) — used to inspect curl responses for errors
