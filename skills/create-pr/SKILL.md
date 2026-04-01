@@ -29,13 +29,17 @@ git diff origin/main --stat
 git remote get-url origin
 ```
 
+**Guard:** If the current branch is `main` or `master`, stop immediately and tell the user:
+"You are on the `main` branch. Please switch to a feature branch before creating a PR."
+
 Parse workspace and repo slug from the remote URL:
 - HTTPS: `https://bitbucket.org/<workspace>/<repo-slug>.git`
 - SSH: `git@bitbucket.org:<workspace>/<repo-slug>.git`
 
 Detect default branch:
 ```bash
-git remote show origin | grep "HEAD branch" | awk '{print $NF}'
+# Detect default branch (falls back to 'main' if network unavailable)
+git remote show origin 2>/dev/null | grep "HEAD branch" | awk '{print $NF}' || echo "main"
 ```
 
 ---
@@ -70,7 +74,8 @@ Compose:
 ## JIRA
 [PROJ-123]($JIRA_BASE_URL/browse/PROJ-123)
 ~~~
-Omit the `## JIRA` section if no ticket was provided.
+Omit the `## JIRA` section if no ticket was provided, or if `JIRA_BASE_URL` is not set.
+If `JIRA_BASE_URL` is not set but a ticket ID was given, include the bare ticket ID as text (e.g. `JIRA: PROJ-123`) rather than a broken link.
 `JIRA_BASE_URL` is read from the `JIRA_BASE_URL` environment variable (e.g. `https://myorg.atlassian.net`).
 
 ---
@@ -102,8 +107,10 @@ curl -s -X POST \
 PAYLOAD
 )" \
   "https://api.bitbucket.org/2.0/repositories/<workspace>/<repo-slug>/pullrequests" \
-  | jq -r '.links.html.href'
+  | jq -r 'if .type == "error" then "ERROR: \(.error.message)" else .links.html.href end'
 ```
+
+If the output starts with `ERROR:`, stop and show the error message to the user.
 
 Print the returned PR URL.
 
