@@ -32,42 +32,17 @@ Accept any of:
 - Ticket key only: `PROJ-123`
 - Full URL: `https://myorg.atlassian.net/browse/PROJ-123`
 
-Extract the project key and ticket number. The JIRA base URL comes from the `JIRA_BASE_URL` environment variable (e.g. `https://myorg.atlassian.net`).
-
-Before proceeding, verify both required environment variables are set:
-
-```bash
-: "${JIRA_TOKEN:?JIRA_TOKEN is not set. Get an API token from Atlassian account settings → Security → API tokens.}"
-: "${JIRA_BASE_URL:?JIRA_BASE_URL is not set. Set it to e.g. https://myorg.atlassian.net}"
-```
-
-If either is missing, stop and show the error message to the user.
+Extract the project key and issue number. The JIRA MCP handles authentication — no environment variables needed.
 
 ---
 
 ## Step 2 — Detect phase
 
-Read existing comments on the ticket via JIRA REST API:
+Use the JIRA MCP tool `jira_get_issue` to fetch the issue (includes comments in the response).
 
-```bash
-RESPONSE=$(curl -s -w "\n%{http_code}" \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment?orderBy=created")
-HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-BODY=$(echo "$RESPONSE" | sed '$d')
-
-if [ "$HTTP_CODE" != "200" ]; then
-  echo "ERROR: Could not read JIRA comments (HTTP $HTTP_CODE). Check JIRA_TOKEN and ticket key."
-  exit 1
-fi
-
-ANALYSIS_COUNT=$(echo "$BODY" \
-  | jq -r '.comments[].body.content[0].content[0].text // empty' \
-  | grep -c "^## Analysis")
-```
-
-- `ANALYSIS_COUNT` is 0 → **Phase 1**
-- `ANALYSIS_COUNT` is 1+ → **Phase 2**
+Scan the returned comments for any whose body contains the text `## Analysis`.
+- No matching comment found → **Phase 1**
+- Matching comment found → **Phase 2**
 
 ---
 
@@ -75,35 +50,12 @@ ANALYSIS_COUNT=$(echo "$BODY" \
 
 ### 1a. Read ticket (all fields)
 
-```bash
-curl -s \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123?expand=renderedFields" \
-  | jq '{
-      summary: .fields.summary,
-      description: .fields.description,
-      status: .fields.status.name,
-      priority: .fields.priority.name,
-      storyPoints: (.fields.customfield_10028 // .fields.story_points // null),
-      sprint: (.fields.customfield_10020[-1].name // .fields.sprint.name // null),
-      labels: .fields.labels,
-      linkedIssues: [.fields.issuelinks[] | {type: .type.name, key: (.inwardIssue.key // .outwardIssue.key)}],
-      acceptanceCriteria: .fields.customfield_10016
-    }'
-```
+Use the JIRA MCP tool `jira_get_issue` with:
+- `issue_key`: PROJ-123
 
-Note: Story points field ID varies by JIRA instance — commonly `customfield_10028`. If storyPoints returns null, ask your JIRA admin for the correct custom field ID.
-Note: Sprint data is commonly stored in `customfield_10020` on JIRA Cloud. If sprint returns null, check your JIRA instance's custom field IDs.
+Read all returned fields: summary, description, status, priority, story points, sprint, labels, linked issues, acceptance criteria, and all existing comments.
 
-Also read existing comments:
-```bash
-curl -s \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment" \
-  | jq -r '.comments[] | "\(.author.displayName): \(.body.content[0].content[0].text // "(rich content)")"'
-```
-
-Note: `customfield_10016` is a common field ID for acceptance criteria — adjust to your JIRA instance if different.
+Note: Custom field IDs for story points (commonly `customfield_10028`) and sprint (commonly `customfield_10020`) vary by JIRA instance. Acceptance criteria is commonly `customfield_10016`. If any of these return null, ask your JIRA admin for the correct field IDs for your instance.
 
 ### 1b. Explore codebase
 
@@ -115,64 +67,42 @@ The Explore subagent should return a list of relevant files and a brief descript
 
 ### 1c. Post analysis comment
 
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "$(cat <<'PAYLOAD'
-{
-  "body": {
-    "type": "doc",
-    "version": 1,
-    "content": [
-      {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Analysis"}]},
-      {"type": "paragraph", "content": [{"type": "text", "text": "Scope: <files, components, APIs affected>"}]},
-      {"type": "paragraph", "content": [{"type": "text", "text": "Approach: <how we plan to solve it — key decisions, alternatives considered>"}]},
-      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "AC coverage"}]},
-      {"type": "bulletList", "content": [
-        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "AC1: <how it will be met>"}]}]},
-        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "AC2: <how it will be met>"}]}]}
-      ]},
-      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Files to change"}]},
-      {"type": "bulletList", "content": [
-        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "path/to/file.ts — <reason>"}]}]}
-      ]},
-      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Risks / open questions"}]},
-      {"type": "bulletList", "content": [
-        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "<unknowns, edge cases, things needing human input>"}]}]}
-      ]}
-    ]
-  }
-}
-PAYLOAD
-)" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
+Use the JIRA MCP tool `jira_add_comment` with:
+- `issue_key`: PROJ-123
+- `comment`: write in Markdown — the MCP converts to JIRA's ADF format automatically
+
+Use this template for the comment body:
+
+```markdown
+## Analysis
+
+**Scope:** <files, components, APIs affected>
+
+**Approach:** <how we plan to solve it — key decisions, alternatives considered>
+
+**AC coverage:**
+- AC1: <how it will be met>
+- AC2: <how it will be met>
+
+**Files to change:**
+- `path/to/file.ts` — <reason>
+
+**Risks / open questions:**
+- <unknowns, edge cases, things needing human input>
 ```
-
-Note: When constructing the actual comment, replace each placeholder in the ADF `text` nodes with real content. Do not embed markdown inside `text` nodes — use proper ADF structure (headings, bulletList, listItem) for formatted output.
-
-If the response contains `"errorMessages"` or the HTTP status is not 201, stop and report the error to the user before proceeding.
 
 ### 1d. Transition ticket → In Progress
 
-First, get available transitions:
-```bash
-curl -s \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/transitions" \
-  | jq '.transitions[] | {id, name}'
-```
+Use the JIRA MCP tool `jira_get_issue_transitions` with:
+- `issue_key`: PROJ-123
 
-Find the ID for "In Progress" (name varies by project — match case-insensitively). Then apply:
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"transition": {"id": "<transition-id>"}}' \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/transitions"
-```
+Find the transition whose name matches "In Progress" (match case-insensitively — names vary by project).
 
-If the transition POST fails (non-204 response or `"errorMessages"` in body), report the error but continue — a failed status transition should not block implementation.
+Use the JIRA MCP tool `jira_transition_issue` with:
+- `issue_key`: PROJ-123
+- `transition_id`: <id from above>
+
+If the transition fails, report the error but continue — a failed transition should not block implementation.
 
 ### 1e. STOP
 
@@ -181,7 +111,7 @@ Tell the user:
 ```
 Analysis posted to PROJ-123. Status set to "In Progress".
 
-Review the analysis at: $JIRA_BASE_URL/browse/PROJ-123
+Review the analysis at: https://<your-org>.atlassian.net/browse/PROJ-123
 
 Say "develop" (or "develop PROJ-123") to begin implementation.
 ```
@@ -203,15 +133,11 @@ git push -u origin feature/PROJ-123-short-description
 
 ### 2b. Post start comment to JIRA
 
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "🚧 Starting implementation on branch `feature/PROJ-123-short-description`."}]}]}}' \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
-```
+Use the JIRA MCP tool `jira_add_comment` with:
+- `issue_key`: PROJ-123
+- `comment`: `🚧 Starting implementation on branch \`feature/PROJ-123-short-description\`.`
 
-If this POST fails, note it but continue — a failed start comment should not block implementation.
+If this fails, note it but continue — a failed start comment should not block implementation.
 
 ### 2c. Invoke test-driven-development
 
@@ -221,13 +147,9 @@ Invoke the `superpowers:test-driven-development` skill. This is a mandatory step
 
 After each significant milestone (tests passing, key component done), post a brief JIRA comment:
 
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "✓ <milestone description>"}]}]}}' \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
-```
+Use the JIRA MCP tool `jira_add_comment` with:
+- `issue_key`: PROJ-123
+- `comment`: `✓ <milestone description>`
 
 Keep it short — one sentence per milestone.
 
@@ -237,50 +159,27 @@ Invoke the `create-pr` skill. Pass ticket ID `PROJ-123` automatically — no nee
 
 ### 2f. Post completion comment to JIRA
 
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "$(cat <<'PAYLOAD'
-{
-  "body": {
-    "type": "doc",
-    "version": 1,
-    "content": [
-      {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Implementation Complete"}]},
-      {"type": "paragraph", "content": [{"type": "text", "text": "PR: <Bitbucket PR URL>"}]},
-      {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "What changed"}]},
-      {"type": "bulletList", "content": [
-        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "<bullet 1>"}]}]},
-        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "<bullet 2>"}]}]}
-      ]},
-      {"type": "paragraph", "content": [{"type": "text", "text": "Tests: <N> passing"}]}
-    ]
-  }
-}
-PAYLOAD
-)" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/comment"
+Use the JIRA MCP tool `jira_add_comment` with:
+- `issue_key`: PROJ-123
+- `comment`:
+
+```markdown
+## Implementation Complete
+
+**PR:** <Bitbucket PR URL>
+
+**What changed:**
+- <bullet 1>
+- <bullet 2>
+
+**Tests:** <N> passing
 ```
 
 ### 2g. Transition ticket → In Review
 
-Get transitions and find the ID for "In Review":
-```bash
-curl -s \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/transitions" \
-  | jq '.transitions[] | {id, name}'
-```
-
-Apply:
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $JIRA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"transition": {"id": "<transition-id>"}}' \
-  "$JIRA_BASE_URL/rest/api/3/issue/PROJ-123/transitions"
-```
+Use the JIRA MCP tool `jira_get_issue_transitions` with `issue_key`: PROJ-123.
+Find the transition whose name matches "In Review" (case-insensitive).
+Use the JIRA MCP tool `jira_transition_issue` with `issue_key`: PROJ-123 and the matched `transition_id`.
 
 ---
 
@@ -300,8 +199,5 @@ curl -s -X POST \
 
 ## Requirements
 
-- `JIRA_TOKEN` — JIRA API token (from Atlassian account settings)
-- `JIRA_BASE_URL` — e.g. `https://myorg.atlassian.net`
-- `BITBUCKET_TOKEN` — Bitbucket App Password (needed for `create-pr` sub-step)
-- `jq` installed (`brew install jq`)
-- `curl` available (pre-installed on macOS)
+- JIRA MCP (`sooperset/mcp-atlassian`) configured — see `SETUP.md`
+- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) configured — see `SETUP.md` (used by `create-pr` sub-step)
