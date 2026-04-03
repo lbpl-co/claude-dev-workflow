@@ -78,10 +78,6 @@ If there are no issues or suggestions, say so explicitly rather than leaving sec
 
 ## Step 5 — Ask to post
 
-Before posting, verify `BITBUCKET_TOKEN` is set. If it is not set or empty, tell the user:
-"BITBUCKET_TOKEN is not set. Set it to a Bitbucket App Password with `pullrequest:write` scope, then re-run."
-Stop.
-
 ```
 Post these comments to Bitbucket? (y/n)
 ```
@@ -89,40 +85,27 @@ If n, stop here.
 
 ---
 
-## Step 6 — Post comments via Bitbucket REST API
+## Step 6 — Post comments + verdict via Bitbucket MCP
 
-For each **Issue** and **Suggestion**, post an inline comment at the relevant file + line:
+For each **Issue** and **Suggestion**, use the Bitbucket MCP tool `bb_add_pr_comment` with:
+- `workspace`: <workspace>
+- `repo_slug`: <repo-slug>
+- `pr_id`: <PR number>
+- `content`: <comment text>
+- `inline_to`: <line number>
+- `path`: <file path>
 
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $BITBUCKET_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "$(cat <<'PAYLOAD'
-{
-  "content": {"raw": "<comment text>"},
-  "inline": {"to": <line_number>, "path": "<file_path>"}
-}
-PAYLOAD
-)" \
-  "https://api.bitbucket.org/2.0/repositories/<workspace>/<repo-slug>/pullrequests/<PR_ID>/comments"
-```
+For **Nits**, use `bb_add_pr_comment` with `content`: `**Nits:**\n- <nit 1>\n- <nit 2>` and no `inline_to`/`path` — posts as a top-level comment.
 
-Post all **Nits** as a single top-level comment (omit `inline` field) to avoid noise:
-
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $BITBUCKET_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"content": {"raw": "**Nits:**\n- <nit 1>\n- <nit 2>"}}' \
-  "https://api.bitbucket.org/2.0/repositories/<workspace>/<repo-slug>/pullrequests/<PR_ID>/comments"
-```
-
-After each curl call, inspect the response. If it contains `"type":"error"` or the HTTP status is not 2xx, report the error message to the user and stop posting further comments.
+For the **verdict**:
+- **Approve** → use Bitbucket MCP tool `bb_approve_pr` with `workspace`, `repo_slug`, `pr_id`
+- **Request Changes** → use Bitbucket MCP tool `bb_reject_pr` with `workspace`, `repo_slug`, `pr_id`
+- **Needs Discussion** → use `bb_add_pr_comment` with a summary of what needs to be discussed before merge
 
 ---
 
 ## Requirements
 
-- `BITBUCKET_TOKEN` — Bitbucket App Password with `pullrequest:write` scope
-- Bitbucket MCP configured and authenticated
-- `jq` installed (`brew install jq`) — used to inspect curl responses for errors
+- Bitbucket MCP read (`bitbucket-mcp`) configured — for fetching PR diff and metadata (Steps 1–2)
+- Bitbucket MCP write (`aashari/mcp-server-atlassian-bitbucket`) configured — for posting comments and verdict (Step 6)
+- See `SETUP.md` for both

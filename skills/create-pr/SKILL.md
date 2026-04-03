@@ -72,11 +72,10 @@ Compose:
 - [ ] <test step>
 
 ## JIRA
-[PROJ-123]($JIRA_BASE_URL/browse/PROJ-123)
+[PROJ-123](https://<your-org>.atlassian.net/browse/PROJ-123)
 ~~~
-Omit the `## JIRA` section if no ticket was provided, or if `JIRA_BASE_URL` is not set.
-If `JIRA_BASE_URL` is not set but a ticket ID was given, include the bare ticket ID as text (e.g. `JIRA: PROJ-123`) rather than a broken link.
-`JIRA_BASE_URL` is read from the `JIRA_BASE_URL` environment variable (e.g. `https://myorg.atlassian.net`).
+Omit the `## JIRA` section if no ticket was provided.
+For the JIRA link, construct the URL as `https://<your-org>.atlassian.net/browse/PROJ-123` — your org name is the Atlassian subdomain (e.g. if you access JIRA at `mycompany.atlassian.net`, use `mycompany`).
 
 ---
 
@@ -90,35 +89,22 @@ If n, stop.
 
 ---
 
-## Step 5 — Create PR via Bitbucket REST API
+## Step 5 — Create PR via Bitbucket MCP
 
-```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $BITBUCKET_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "$(cat <<'PAYLOAD'
-{
-  "title": "<title>",
-  "description": "<body>",
-  "source": {"branch": {"name": "<current-branch>"}},
-  "destination": {"branch": {"name": "<default-branch>"}},
-  "close_source_branch": true
-}
-PAYLOAD
-)" \
-  "https://api.bitbucket.org/2.0/repositories/<workspace>/<repo-slug>/pullrequests" \
-  | jq -r 'if .type == "error" then "ERROR: \(.error.message)" else .links.html.href end'
-```
+Use the Bitbucket MCP tool `bb_add_pr` with:
+- `workspace`: <workspace extracted from git remote in Step 1>
+- `repo_slug`: <repo-slug extracted from git remote in Step 1>
+- `title`: <generated title from Step 3>
+- `description`: <generated body from Step 3>
+- `source_branch`: <current branch from Step 1>
+- `destination_branch`: <default branch from Step 1>
+- `close_source_branch`: true
 
-If the output starts with `ERROR:`, stop and show the error message to the user.
-
-Print the returned PR URL.
+The MCP returns the PR URL. Print it to the terminal.
 
 ---
 
 ## Requirements
 
-- `BITBUCKET_TOKEN` — Bitbucket App Password with `pullrequest:write` scope
-- `JIRA_BASE_URL` — e.g. `https://myorg.atlassian.net` (only needed if linking JIRA tickets)
+- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) configured — see `SETUP.md`
 - Must be on a feature branch (not `main` or `master`)
-- `jq` installed (`brew install jq`)
