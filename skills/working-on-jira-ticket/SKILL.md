@@ -1,6 +1,6 @@
 ---
 name: working-on-jira-ticket
-description: "MUST use when the message contains a JIRA ticket reference — key (PROJ-123) or Atlassian URL — regardless of other content in the message. This skill takes priority over brainstorming or design skills when a JIRA ticket is referenced. Enforces a two-phase workflow: Analyse first, then Develop. Keeps the ticket and Bitbucket PR updated throughout."
+description: "MUST use when the message contains a JIRA ticket reference — key (PROJ-123) or Atlassian URL — regardless of other content in the message. This skill takes priority over any other skill when a JIRA ticket is referenced. Enforces a two-phase workflow: Analyse first, then Develop. Keeps the ticket and Bitbucket PR updated throughout."
 ---
 
 # Working on a JIRA Ticket
@@ -172,7 +172,7 @@ If this fails, note it but continue — a failed start comment should not block 
 
 ### 2c. Invoke test-driven-development
 
-Invoke the `superpowers:test-driven-development` skill. This is a mandatory step — do not write implementation code without it.
+Follow test-driven development: write tests first, then implementation. This is mandatory — do not write implementation code without tests.
 
 ### 2d. Post milestone comments
 

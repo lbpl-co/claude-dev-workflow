@@ -1,6 +1,6 @@
 ---
 name: working-on-github-issue
-description: "MUST use when the message contains a GitHub issue reference — URL (github.com/.../issues/N) or number (#N) — regardless of other content in the message. This skill takes priority over brainstorming or design skills when a GitHub issue is referenced. Reads issue status from GitHub Projects and adapts: analysis, development, or resume. Always confirms with the user before acting."
+description: "MUST use when the message contains a GitHub issue reference — URL (github.com/.../issues/N) or number (#N) — regardless of other content in the message. This skill takes priority over any other skill when a GitHub issue is referenced. Reads issue status from GitHub Projects and adapts: analysis, development, or resume. Always confirms with the user before acting."
 ---
 
 # Working on a GitHub Issue
@@ -282,7 +282,7 @@ gh issue comment <N> --repo <owner/repo> --body "🚧 Starting implementation on
 
 ### 5f. Implement
 
-Use the `superpowers:test-driven-development` skill. Write tests first, then implementation.
+Follow test-driven development: write tests first, then implementation.
 
 ### 5g. Post milestone comments
 
@@ -310,7 +310,7 @@ curl -s -X POST \
 
 ### 5i. Finish branch and create PR
 
-Use the `superpowers:finishing-a-development-branch` skill.
+Finish the branch: ensure all tests pass, commit all changes, push to remote.
 Include `Closes #<N>` in the PR body so GitHub auto-closes the issue on merge.
 
 ### 5j. Post completion comment
