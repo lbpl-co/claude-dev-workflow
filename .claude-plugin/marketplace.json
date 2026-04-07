@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "claude-dev-workflow",
-      "source": ".",
+      "source": "./",
       "description": "Developer workflow skills: GitHub issue & JIRA ticket workflows, Bitbucket PR creation, and PR review."
     }
   ]
