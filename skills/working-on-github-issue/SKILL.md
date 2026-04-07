@@ -31,6 +31,55 @@ User: "work on issue #123"
 
 ---
 
+## Step 0 — Preflight checks
+
+Before anything else, verify the required tools are available:
+
+```bash
+gh --version
+```
+
+**If `gh` is not installed:**
+```
+The GitHub CLI (gh) is required but not installed.
+
+Install it:
+  brew install gh          # macOS
+  sudo apt install gh      # Ubuntu/Debian
+
+Then authenticate:
+  gh auth login
+```
+Stop and wait for the user to install.
+
+**If `gh` is installed but not authenticated:**
+```bash
+gh auth status
+```
+
+If not logged in:
+```
+You're not logged in to GitHub. Run:
+  gh auth login
+
+Follow the browser prompt to authenticate.
+```
+Stop and wait for the user to authenticate.
+
+**If `jq` is not installed:**
+```
+jq is required for reading GitHub Projects fields.
+
+Install it:
+  brew install jq          # macOS
+  sudo apt install jq      # Ubuntu/Debian
+```
+Stop and wait for the user to install.
+
+Once all checks pass, proceed.
+
+---
+
 ## Step 1 — Identify the issue and confirm context
 
 Extract owner, repo, and issue number from what the user provided:

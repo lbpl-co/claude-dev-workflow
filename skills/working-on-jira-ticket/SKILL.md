@@ -26,6 +26,37 @@ Phase 1 — Analyse        Phase 2 — Develop
 
 ---
 
+## Step 0 — Preflight checks
+
+Before anything else, verify the required MCP tools are available.
+
+Try calling `jira_get_issue` with a test key. If the tool is not found or returns an auth error:
+
+```
+JIRA MCP is not configured. To set it up:
+
+1. Get a JIRA API token: https://id.atlassian.com/manage-profile/security/api-tokens
+2. Add to ~/.claude/settings.json under "mcpServers":
+
+   "mcp-atlassian": {
+     "command": "npx",
+     "args": ["-y", "@sooperset/mcp-atlassian"],
+     "env": {
+       "JIRA_URL": "https://your-org.atlassian.net",
+       "JIRA_USERNAME": "you@yourcompany.com",
+       "JIRA_API_TOKEN": "your-token"
+     }
+   }
+
+3. Restart Claude (settings load at startup).
+
+Full guide: see SETUP.md in the claude-dev-workflow plugin.
+```
+
+Stop and wait for the user to configure.
+
+---
+
 ## Step 1 — Identify the ticket
 
 Accept any of:
