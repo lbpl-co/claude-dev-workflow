@@ -1,0 +1,11 @@
+{
+  "name": "lead-dev-workflow",
+  "owner": { "name": "Lead" },
+  "plugins": [
+    {
+      "name": "claude-dev-workflow",
+      "source": ".",
+      "description": "Developer workflow skills: GitHub issue & JIRA ticket workflows, Bitbucket PR creation, and PR review."
+    }
+  ]
+}
