@@ -1,6 +1,6 @@
 ---
 name: working-on-jira-ticket
-description: Use when the user asks to work on a JIRA ticket (by key e.g. PROJ-123). Enforces a two-phase workflow — Analyse first, then Develop — and keeps the ticket and Bitbucket PR updated throughout.
+description: "MUST use when the message contains a JIRA ticket reference — key (PROJ-123) or Atlassian URL — regardless of other content in the message. This skill takes priority over brainstorming or design skills when a JIRA ticket is referenced. Enforces a two-phase workflow: Analyse first, then Develop. Keeps the ticket and Bitbucket PR updated throughout."
 ---
 
 # Working on a JIRA Ticket

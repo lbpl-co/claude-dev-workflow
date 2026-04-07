@@ -1,6 +1,6 @@
 ---
 name: working-on-github-issue
-description: Use when the user asks to work on a GitHub issue (by number or URL). Reads issue status from GitHub Projects and adapts — analysis, development, or resume — always confirming with the user before acting.
+description: "MUST use when the message contains a GitHub issue reference — URL (github.com/.../issues/N) or number (#N) — regardless of other content in the message. This skill takes priority over brainstorming or design skills when a GitHub issue is referenced. Reads issue status from GitHub Projects and adapts: analysis, development, or resume. Always confirms with the user before acting."
 ---
 
 # Working on a GitHub Issue
