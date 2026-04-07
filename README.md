@@ -49,9 +49,23 @@ Reviews a Bitbucket PR. Fetches diff via Bitbucket MCP, produces a structured te
 
 ## Install
 
+Two steps, one-time:
+
 ```bash
-claude plugin install github:lbpl-co/claude-dev-workflow
+# 1. Add the plugin marketplace
+claude plugin marketplace add lbpl-co/claude-dev-workflow
+
+# 2. Install the plugin (use --scope user to make it available in all projects)
+claude plugin install claude-dev-workflow@lead-dev-workflow --scope user
 ```
+
+Verify:
+```bash
+claude plugin list
+# Expected: "claude-dev-workflow" appears under User, enabled
+```
+
+> **Project-only install:** Use `--scope project` instead of `--scope user` if you only want the skills available in one project.
 
 ## Setup
 

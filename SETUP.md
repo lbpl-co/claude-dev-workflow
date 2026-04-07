@@ -36,15 +36,25 @@ claude --version
 
 ## 2. Install this plugin
 
+Two steps:
+
 ```bash
-claude plugin install github:lbpl-co/claude-dev-workflow
+# Add the plugin marketplace (one-time)
+claude plugin marketplace add lbpl-co/claude-dev-workflow
+
+# Install the plugin globally (available in all projects)
+claude plugin install claude-dev-workflow@lead-dev-workflow --scope user
 ```
+
+> **Project-only install:** Use `--scope project` instead of `--scope user` if you only want the skills in a specific project.
 
 Verify:
 ```bash
 claude plugin list
-# Expected: "claude-dev-workflow" appears in the list
+# Expected: "claude-dev-workflow" appears under User (or Project), status: enabled
 ```
+
+Start a **new** Claude session after installing — plugins load at startup.
 
 ---
 
