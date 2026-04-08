@@ -51,6 +51,7 @@ which jq 2>/dev/null
 Status:
 - `gh` CLI: installed / **not installed**
 - `gh` auth: logged in / **not logged in**
+- `gh` scopes: has `read:project` / **missing `read:project`** (check `gh auth status` Token scopes line)
 - `GITHUB_TOKEN`: set / **not set**
 - `jq`: installed / **not installed**
 
@@ -114,14 +115,22 @@ Wait. Then verify: `gh --version`
 ### GitHub: Authenticate gh
 
 ```
-Authenticate with GitHub:
+Authenticate with GitHub (with required scopes for Projects):
 
-  gh auth login
+  gh auth login --scopes "repo,read:org,read:project"
 
 Follow the browser prompt. Let me know when done.
 ```
 
-Wait. Then verify: `gh auth status`
+Wait. Then verify: `gh auth status` — check that `read:project` appears in Token scopes.
+
+If already authenticated but missing `read:project`:
+```
+Add the missing scope:
+  gh auth login --scopes "read:project"
+
+This adds it on top of your existing scopes.
+```
 
 ### GitHub: Set GITHUB_TOKEN
 
