@@ -60,7 +60,7 @@ gh auth status
 If not logged in:
 ```
 You're not logged in to GitHub. Run:
-  gh auth login --scopes "repo,read:org,read:project"
+  gh auth login --scopes "read:org,repo,workflow,read:project,project"
 
 Follow the browser prompt to authenticate.
 ```
@@ -74,7 +74,7 @@ Your GitHub token is missing the "read:project" scope, which is needed
 to read and update GitHub Projects status fields.
 
 Re-authenticate with the required scope:
-  gh auth login --scopes "read:project"
+  gh auth login --scopes "read:org,repo,workflow,read:project,project"
 
 This adds the scope on top of your existing ones.
 ```
@@ -383,7 +383,7 @@ Use `github-status-helper.md` commands to set status to `In Review`.
 
 ## Requirements
 
-- `gh` CLI authenticated with required scopes: `gh auth login --scopes "repo,read:org,read:project"`
+- `gh` CLI authenticated with required scopes: `gh auth login --scopes "read:org,repo,workflow,read:project,project"`
 - `GITHUB_TOKEN` env var set (for screenshot uploads)
 - Issue must be on a GitHub Projects board (for status tracking)
 - `jq` installed (for parsing project field IDs)

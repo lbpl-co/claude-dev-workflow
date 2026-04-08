@@ -117,7 +117,7 @@ Wait. Then verify: `gh --version`
 ```
 Authenticate with GitHub (with required scopes for Projects):
 
-  gh auth login --scopes "repo,read:org,read:project"
+  gh auth login --scopes "read:org,repo,workflow,read:project,project"
 
 Follow the browser prompt. Let me know when done.
 ```
@@ -127,7 +127,7 @@ Wait. Then verify: `gh auth status` — check that `read:project` appears in Tok
 If already authenticated but missing `read:project`:
 ```
 Add the missing scope:
-  gh auth login --scopes "read:project"
+  gh auth login --scopes "read:org,repo,workflow,read:project,project"
 
 This adds it on top of your existing scopes.
 ```
