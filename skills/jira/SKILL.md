@@ -1,11 +1,11 @@
 ---
-name: working-on-jira-ticket
+name: jira
 description: "MUST use when the message contains a JIRA ticket reference — key (PROJ-123) or Atlassian URL — regardless of other content in the message. This skill takes priority over any other skill when a JIRA ticket is referenced. Enforces a two-phase workflow: Analyse first, then Develop. Keeps the ticket and Bitbucket PR updated throughout."
 ---
 
 # Working on a JIRA Ticket
 
-**Announce at start:** "I'm using the working-on-jira-ticket skill."
+**Announce at start:** "I'm using the /cdv:jira skill."
 
 ## Overview
 
@@ -17,7 +17,7 @@ Phase 1 — Analyse        Phase 2 — Develop
   Explore codebase           Create branch
   Post analysis comment      Implement (TDD)
   Transition → In Progress   Post milestone comments
-  STOP & wait                Invoke create-pr skill
+  STOP & wait                Invoke /cdv:pr
                              Post completion comment
                              Transition → In Review
 ```
@@ -186,7 +186,7 @@ Keep it short — one sentence per milestone.
 
 ### 2e. Create PR
 
-Invoke the `create-pr` skill. Pass ticket ID `PROJ-123` automatically — no need to ask the user.
+Invoke the `/cdv:pr` skill. Pass ticket ID `PROJ-123` automatically — no need to ask the user.
 
 ### 2f. Post completion comment to JIRA
 
@@ -231,4 +231,4 @@ Use the JIRA MCP tool `jira_transition_issue` with `issue_key`: PROJ-123 and the
 ## Requirements
 
 - JIRA MCP (`sooperset/mcp-atlassian`) configured — see `SETUP.md`
-- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) configured — see `SETUP.md` (used by `create-pr` sub-step)
+- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) configured — see `SETUP.md` (used by `/cdv:pr` sub-step)

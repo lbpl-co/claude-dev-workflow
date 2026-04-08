@@ -1,80 +1,42 @@
-# claude-dev-workflow
+# CDV — Claude Dev Workflow
 
-A Claude Code plugin that enforces disciplined developer workflows: two-phase issue/ticket analysis before coding, structured Bitbucket PRs, and inline PR review.
+A Claude Code plugin with slash commands for disciplined developer workflows: GitHub issue tracking, JIRA ticket management, Bitbucket PR creation, and code review.
 
-## Skills
+## Commands
 
-### `working-on-github-issue`
-Two-phase GitHub issue workflow (Analyse → Develop). Keeps GitHub Issues and project boards up to date.
-
-**Trigger:** "Work on issue #295"
-
-**Requirements:**
-- `gh` CLI authenticated (`gh auth login`)
-- `GITHUB_TOKEN` env var set
-- Issue must be on a GitHub Projects board
-
----
-
-### `working-on-jira-ticket`
-Two-phase JIRA ticket workflow (Analyse → Develop). Reads all ticket fields, posts analysis + milestone comments to JIRA, creates a Bitbucket PR at the end.
-
-**Trigger:** "Work on PROJ-123" or "pick up ticket PROJ-123"
-
-**Requirements:**
-- JIRA MCP (`sooperset/mcp-atlassian`) — see [SETUP.md](./SETUP.md)
-- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) — see [SETUP.md](./SETUP.md)
-
----
-
-### `create-pr`
-Creates a structured Bitbucket pull request from the current branch. Generates title, description, and test plan checklist. Optionally links a JIRA ticket.
-
-**Trigger:** "Create a PR" or "open a PR"
-
-**Requirements:**
-- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) — see [SETUP.md](./SETUP.md)
-
----
-
-### `review-pr`
-Reviews a Bitbucket PR. Fetches diff via Bitbucket MCP, produces a structured terminal review (blocking issues, suggestions, nits, verdict), then optionally posts inline comments to Bitbucket.
-
-**Trigger:** "Review PR 42" or "Review https://bitbucket.org/.../pull-requests/42"
-
-**Requirements:**
-- Bitbucket MCP read (`bitbucket-mcp`) + write (`aashari/mcp-server-atlassian-bitbucket`) — see [SETUP.md](./SETUP.md)
-
----
+| Command | What it does |
+|---------|-------------|
+| `/cdv:setup` | Interactive onboarding — pick your integrations, guided setup |
+| `/cdv:issue #123` | Work on a GitHub issue (status-driven: analysis → development) |
+| `/cdv:jira PROJ-123` | Work on a JIRA ticket (two-phase: analyse → develop) |
+| `/cdv:pr` | Create a structured Bitbucket PR from current branch |
+| `/cdv:review 42` | Review a Bitbucket PR with inline comments |
 
 ## Install
 
-Two steps, one-time:
-
 ```bash
-# 1. Add the plugin marketplace
+# 1. Add the marketplace (one-time)
 claude plugin marketplace add lbpl-co/claude-dev-workflow
 
-# 2. Install the plugin (use --scope user to make it available in all projects)
-claude plugin install claude-dev-workflow@lead-dev-workflow --scope user
+# 2. Install the plugin
+claude plugin install cdv@lead-cdv --scope user
 ```
 
-Verify:
-```bash
-claude plugin list
-# Expected: "claude-dev-workflow" appears under User, enabled
-```
+Then run `/cdv:setup` to configure your integrations.
 
-> **Project-only install:** Use `--scope project` instead of `--scope user` if you only want the skills available in one project.
+> **Project-only install:** Use `--scope project` instead of `--scope user` to limit to one project.
 
 ## Setup
 
-JIRA and Bitbucket authentication is handled via MCP servers — no environment variables needed for those skills.
+Run `/cdv:setup` in any Claude session — it walks you through everything interactively.
 
-The only env var required is:
+Or see [SETUP.md](./SETUP.md) for manual setup instructions.
 
-| Variable | Used by | Description |
-|----------|---------|-------------|
-| `GITHUB_TOKEN` | `working-on-github-issue` | GitHub PAT for uploading screenshots |
+## Requirements by command
 
-**Full setup instructions:** see [SETUP.md](./SETUP.md)
+| Command | Needs |
+|---------|-------|
+| `/cdv:issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
+| `/cdv:jira` | JIRA MCP + Bitbucket MCP |
+| `/cdv:pr` | Bitbucket MCP |
+| `/cdv:review` | Bitbucket MCP (read + write) |

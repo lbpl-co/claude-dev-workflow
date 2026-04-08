@@ -1,11 +1,11 @@
 ---
-name: review-pr
+name: review
 description: Use when the user wants to review a Bitbucket pull request. Fetches the PR diff via Bitbucket MCP, produces a structured inline review in the terminal, then optionally posts comments back to Bitbucket.
 ---
 
 # Review PR
 
-**Announce at start:** "I'm using the review-pr skill."
+**Announce at start:** "I'm using the /cdv:review skill."
 
 ## Overview
 

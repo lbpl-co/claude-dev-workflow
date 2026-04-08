@@ -1,5 +1,5 @@
 {
-  "name": "claude-dev-workflow",
-  "description": "Developer workflow skills: two-phase GitHub issue and JIRA ticket workflows, Bitbucket PR creation, and PR review with inline comments.",
+  "name": "cdv",
+  "description": "Claude Dev Workflow — slash commands for GitHub issues, JIRA tickets, Bitbucket PRs, and code review. Use /cdv:setup to get started.",
   "author": { "name": "Lead" }
 }

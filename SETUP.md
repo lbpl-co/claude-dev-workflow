@@ -1,6 +1,8 @@
 # Developer Setup Guide
 
-Get all four `claude-dev-workflow` skills working in ~15 minutes.
+Get CDV (Claude Dev Workflow) commands working in ~15 minutes.
+
+> **Quick start:** After installing the plugin (steps 1-2), run `/cdv:setup` in any Claude session for interactive guided setup. The rest of this document is for manual setup.
 
 ---
 
@@ -39,20 +41,22 @@ claude --version
 Two steps:
 
 ```bash
-# Add the plugin marketplace (one-time)
+# Add the marketplace (one-time)
 claude plugin marketplace add lbpl-co/claude-dev-workflow
 
-# Install the plugin globally (available in all projects)
-claude plugin install claude-dev-workflow@lead-dev-workflow --scope user
+# Install the plugin
+claude plugin install cdv@lead-cdv --scope user
 ```
 
-> **Project-only install:** Use `--scope project` instead of `--scope user` if you only want the skills in a specific project.
+> **Project-only install:** Use `--scope project` instead of `--scope user` to limit to one project.
 
 Verify:
 ```bash
 claude plugin list
-# Expected: "claude-dev-workflow" appears under User (or Project), status: enabled
+# Expected: "cdv" appears under User (or Project), status: enabled
 ```
+
+Start a new Claude session and run `/cdv:setup` for interactive guided setup. Or continue below for manual setup.
 
 Start a **new** Claude session after installing — plugins load at startup.
 
@@ -166,7 +170,7 @@ Expected: Claude lists open PRs from that Bitbucket repo.
 
 ---
 
-## 5. GitHub token (`working-on-github-issue` only)
+## 5. GitHub token (`/cdv:issue` only)
 
 Skip this section if your team only uses JIRA, not GitHub Issues.
 
@@ -229,36 +233,36 @@ Your finished `~/.claude/settings.json`:
 
 ---
 
-## 7. Verify all skills
+## 7. Verify
 
-Open a terminal, `cd` into any git repository, and start Claude:
+Open a terminal, start Claude, and run:
 
-```bash
-cd ~/your-project
-claude
+```
+/cdv:setup
 ```
 
-Run each check:
+This checks all your integrations and tells you what's working.
 
-| Skill | What to type | Expected |
-|-------|-------------|----------|
-| JIRA MCP | `List my open JIRA issues` | Lists your JIRA tickets |
-| Bitbucket MCP | `List PRs in repo <repo-name>` | Lists open PRs |
-| `working-on-jira-ticket` | `work on PROJ-123` | Reads ticket, posts analysis to JIRA, stops for "develop" |
-| `create-pr` | `create a PR` (on a feature branch) | Drafts and creates PR on Bitbucket |
-| `review-pr` | `review PR 42` | Fetches diff, prints structured review |
-| `working-on-github-issue` | `work on issue #1 --repo owner/repo` | Reads GitHub issue, posts analysis comment |
+Or test individual commands:
+
+| Command | What to type | Expected |
+|---------|-------------|----------|
+| `/cdv:issue` | `/cdv:issue #1` | Reads GitHub issue, checks status, confirms with you |
+| `/cdv:jira` | `/cdv:jira PROJ-123` | Reads JIRA ticket, posts analysis |
+| `/cdv:pr` | `/cdv:pr` (on a feature branch) | Drafts and creates PR on Bitbucket |
+| `/cdv:review` | `/cdv:review 42` | Fetches diff, prints structured review |
 
 ---
 
 ## Quick reference
 
-| Skill | Trigger | Needs |
-|-------|---------|-------|
-| `working-on-github-issue` | "Work on issue #N" | `gh` CLI + `GITHUB_TOKEN` |
-| `working-on-jira-ticket` | "Work on PROJ-123" | JIRA MCP (step 3) |
-| `create-pr` | "Create a PR" | Bitbucket MCP (step 4) |
-| `review-pr` | "Review PR 42" | Both Bitbucket MCPs (steps 3 read + 4 write) |
+| Command | Needs |
+|---------|-------|
+| `/cdv:setup` | Nothing — helps you set up everything else |
+| `/cdv:issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
+| `/cdv:jira` | JIRA MCP (step 3) + Bitbucket MCP (step 4) |
+| `/cdv:pr` | Bitbucket MCP (step 4) |
+| `/cdv:review` | Bitbucket MCP (read + write) |
 
 ---
 
