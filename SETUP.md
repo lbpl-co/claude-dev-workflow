@@ -247,10 +247,10 @@ Or test individual commands:
 
 | Command | What to type | Expected |
 |---------|-------------|----------|
-| `/cdv:issue` | `/cdv:issue #1` | Reads GitHub issue, checks status, confirms with you |
-| `/cdv:jira` | `/cdv:jira PROJ-123` | Reads JIRA ticket, posts analysis |
-| `/cdv:pr` | `/cdv:pr` (on a feature branch) | Drafts and creates PR on Bitbucket |
-| `/cdv:review` | `/cdv:review 42` | Fetches diff, prints structured review |
+| `/cdv:gh-issue` | `/cdv:gh-issue #1` | Reads GitHub issue, checks status, confirms with you |
+| `/cdv:jira-ticket` | `/cdv:jira-ticket PROJ-123` | Reads JIRA ticket, posts analysis |
+| `/cdv:bb-pr` | `/cdv:bb-pr` (on a feature branch) | Drafts and creates PR on Bitbucket |
+| `/cdv:bb-prreview` | `/cdv:bb-prreview 42` | Fetches diff, prints structured review |
 
 ---
 
@@ -259,10 +259,10 @@ Or test individual commands:
 | Command | Needs |
 |---------|-------|
 | `/cdv:setup` | Nothing — helps you set up everything else |
-| `/cdv:issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
-| `/cdv:jira` | JIRA MCP (step 3) + Bitbucket MCP (step 4) |
-| `/cdv:pr` | Bitbucket MCP (step 4) |
-| `/cdv:review` | Bitbucket MCP (read + write) |
+| `/cdv:gh-issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
+| `/cdv:jira-ticket` | JIRA MCP (step 3) + Bitbucket MCP (step 4) |
+| `/cdv:bb-pr` | Bitbucket MCP (step 4) |
+| `/cdv:bb-prreview` | Bitbucket MCP (read + write) |
 
 ---
 

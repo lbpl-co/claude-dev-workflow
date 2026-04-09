@@ -7,10 +7,10 @@ A Claude Code plugin with slash commands for disciplined developer workflows: Gi
 | Command | What it does |
 |---------|-------------|
 | `/cdv:setup` | Interactive onboarding — pick your integrations, guided setup |
-| `/cdv:issue #123` | Work on a GitHub issue (status-driven: analysis → development) |
-| `/cdv:jira PROJ-123` | Work on a JIRA ticket (two-phase: analyse → develop) |
-| `/cdv:pr` | Create a structured Bitbucket PR from current branch |
-| `/cdv:review 42` | Review a Bitbucket PR with inline comments |
+| `/cdv:gh-issue #123` | Work on a GitHub issue (status-driven: analysis → development) |
+| `/cdv:jira-ticket PROJ-123` | Work on a JIRA ticket (two-phase: analyse → develop) |
+| `/cdv:bb-pr` | Create a structured Bitbucket PR from current branch |
+| `/cdv:bb-prreview 42` | Review a Bitbucket PR with inline comments |
 
 ## Install
 
@@ -36,7 +36,7 @@ Or see [SETUP.md](./SETUP.md) for manual setup instructions.
 
 | Command | Needs |
 |---------|-------|
-| `/cdv:issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
-| `/cdv:jira` | JIRA MCP + Bitbucket MCP |
-| `/cdv:pr` | Bitbucket MCP |
-| `/cdv:review` | Bitbucket MCP (read + write) |
+| `/cdv:gh-issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
+| `/cdv:jira-ticket` | JIRA MCP + Bitbucket MCP |
+| `/cdv:bb-pr` | Bitbucket MCP |
+| `/cdv:bb-prreview` | Bitbucket MCP (read + write) |

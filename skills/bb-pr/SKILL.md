@@ -1,11 +1,11 @@
 ---
-name: pr
+name: bb-pr
 description: Use when the user wants to create a Bitbucket pull request from the current branch. Generates a structured PR title, description, and test plan. Optionally links a JIRA ticket.
 ---
 
 # Create PR
 
-**Announce at start:** "I'm using the /cdv:pr skill."
+**Announce at start:** "I'm using the /cdv:bb-pr skill."
 
 ## Overview
 
@@ -46,7 +46,7 @@ git remote show origin 2>/dev/null | grep "HEAD branch" | awk '{print $NF}' || e
 
 ## Step 2 — JIRA ticket
 
-**If invoked by `/cdv:jira`:** the ticket ID (`PROJ-123` or similar) is already present in the conversation context from the parent skill. Use the same ticket key that has been referenced throughout the current conversation. Skip the user prompt and proceed directly to Step 3.
+**If invoked by `/cdv:jira-ticket`:** the ticket ID (`PROJ-123` or similar) is already present in the conversation context from the parent skill. Use the same ticket key that has been referenced throughout the current conversation. Skip the user prompt and proceed directly to Step 3.
 
 **If invoked standalone:** ask the user:
 ```

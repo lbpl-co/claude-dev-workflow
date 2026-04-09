@@ -14,9 +14,9 @@ Welcome to Claude Dev Workflow (CDV) setup!
 
 Which integrations does your team use? I'll only set up what you need.
 
-1. GitHub Issues   → /cdv:issue (needs: gh CLI + GITHUB_TOKEN)
-2. JIRA            → /cdv:jira  (needs: JIRA MCP server)
-3. Bitbucket PRs   → /cdv:pr + /cdv:review (needs: Bitbucket MCP server)
+1. GitHub Issues   → /cdv:gh-issue (needs: gh CLI + GITHUB_TOKEN)
+2. JIRA            → /cdv:jira-ticket (needs: JIRA MCP server)
+3. Bitbucket PRs   → /cdv:bb-pr + /cdv:bb-prreview (needs: Bitbucket MCP server)
 4. All of the above
 
 Pick one or more (e.g., "1 and 3" or "all"):
@@ -242,10 +242,10 @@ Setup complete!
   ✓ Bitbucket      — MCP (read + write) configured
 
 Available commands:
-  /cdv:issue #123                    — work on a GitHub issue
-  /cdv:jira PROJ-123                 — work on a JIRA ticket
-  /cdv:pr                            — create a Bitbucket PR
-  /cdv:review 42                     — review a Bitbucket PR
+  /cdv:gh-issue #123                 — work on a GitHub issue
+  /cdv:jira-ticket PROJ-123          — work on a JIRA ticket
+  /cdv:bb-pr                         — create a Bitbucket PR
+  /cdv:bb-prreview 42                — review a Bitbucket PR
   /cdv:setup                         — run this setup again
 
 Run /cdv:setup anytime to check status or add more integrations.

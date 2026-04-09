@@ -1,15 +1,15 @@
 ---
-name: review
-description: Use when the user wants to review a Bitbucket pull request. Fetches the PR diff via Bitbucket MCP, produces a structured inline review in the terminal, then optionally posts comments back to Bitbucket.
+name: bb-prreview
+description: Use when the user wants to review a Bitbucket pull request. Fetches the PR diff via Bitbucket MCP, produces a structured review in the terminal, then optionally posts inline comments back to Bitbucket.
 ---
 
-# Review PR
+# Bitbucket PR Review
 
-**Announce at start:** "I'm using the /cdv:review skill."
+**Announce at start:** "I'm using the /cdv:bb-prreview skill."
 
 ## Overview
 
-Reviews a Bitbucket PR: fetches diff and metadata via MCP, produces a structured review in the terminal, then optionally posts inline comments to Bitbucket.
+Reviews a Bitbucket PR using Claude directly — no external tools needed beyond Bitbucket MCP. Fetches the diff, analyses the code, presents a structured review, and optionally posts comments back.
 
 ---
 
@@ -26,18 +26,18 @@ Extract workspace, repo slug, and PR number from what the user provided:
 Use Bitbucket MCP tools:
 
 ```
-mcp__bitbucket-mcp__bb_get_pull_request        → title, description, author, target branch
-mcp__bitbucket-mcp__bb_get_pull_request_diff   → full unified diff
-mcp__bitbucket-mcp__bb_get_pull_request_comments → existing comments (avoid duplicating feedback)
+bb_get_pull_request        → title, description, author, target branch
+bb_get_pull_request_diff   → full unified diff
+bb_get_pull_request_comments → existing comments (avoid duplicating feedback)
 ```
 
-If any MCP tool returns an error (e.g. PR not found), report the error to the user and stop. Do not proceed with an empty or partial diff.
+If any tool returns an error (e.g. PR not found), report the error to the user and stop.
 
 ---
 
 ## Step 3 — Analyse
 
-Review the diff for:
+Review the entire diff for:
 
 - **Correctness** — does the code do what the PR claims?
 - **Edge cases** — unhandled inputs, error paths, null/empty, concurrency
@@ -47,6 +47,8 @@ Review the diff for:
 - **Performance** — obvious inefficiencies in hot paths
 
 Do NOT flag issues that are already covered in existing PR comments.
+
+If the diff is large, read it in chunks per file. Do not skip files.
 
 ---
 
@@ -106,6 +108,6 @@ For the **verdict**:
 
 ## Requirements
 
-- Bitbucket MCP read (`bitbucket-mcp`) configured — for fetching PR diff and metadata (Steps 1–2)
-- Bitbucket MCP write (`aashari/mcp-server-atlassian-bitbucket`) configured — for posting comments and verdict (Step 6)
-- See `SETUP.md` for both
+- Bitbucket MCP read (`bitbucket-mcp`) configured — for fetching PR diff and metadata
+- Bitbucket MCP write (`aashari/mcp-server-atlassian-bitbucket`) configured — for posting comments and verdict
+- See `SETUP.md` for setup instructions, or run `/cdv:setup`
