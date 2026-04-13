@@ -120,7 +120,7 @@ Expected: Claude lists your open JIRA tickets. If you see an error, check the `J
 
 ## 4. MCP: Bitbucket (`aashari/mcp-server-atlassian-bitbucket`)
 
-**Required by:** `working-on-jira-ticket`, `review-pr`
+**Required by:** `/cdv:jira-ticket`, `/cdv:bb-prreview`
 
 ### 4a. Create a Bitbucket App Password
 
@@ -170,7 +170,7 @@ Expected: Claude lists open PRs from that Bitbucket repo.
 
 ---
 
-## 5. GitHub token (`/cdv:issue` only)
+## 5. GitHub token (`/cdv:gh-issue` only)
 
 Skip this section if your team only uses JIRA, not GitHub Issues.
 
