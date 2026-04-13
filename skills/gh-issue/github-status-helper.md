@@ -60,7 +60,67 @@ gh project item-edit \
   --single-select-option-id <option-id>
 ```
 
-## 7. Update branch_link (text field)
+## 7. Update a single-select field (e.g. Size, Task Type)
+
+```bash
+# List field ID and all option IDs:
+gh project field-list <project-number> --owner <org-or-user> --format json \
+  | jq '.fields[] | select(.name == "<FieldName>") | {fieldId: .id, options: .options}'
+
+# Update:
+gh project item-edit \
+  --project-id <project-node-id> \
+  --id <item-node-id> \
+  --field-id <field-id> \
+  --single-select-option-id <option-id>
+```
+
+## 8. Update a number field (e.g. Estimate)
+
+```bash
+# Find field ID:
+gh project field-list <project-number> --owner <org-or-user> --format json \
+  | jq '.fields[] | select(.name == "Estimate") | .id'
+
+# Update:
+gh project item-edit \
+  --project-id <project-node-id> \
+  --id <item-node-id> \
+  --field-id <field-id> \
+  --number <value>
+```
+
+## 9. Update a date field (e.g. End date)
+
+```bash
+# Find field ID:
+gh project field-list <project-number> --owner <org-or-user> --format json \
+  | jq '.fields[] | select(.name == "End date") | .id'
+
+# Update (ISO 8601 format):
+gh project item-edit \
+  --project-id <project-node-id> \
+  --id <item-node-id> \
+  --field-id <field-id> \
+  --date "YYYY-MM-DD"
+```
+
+## 10. Update an iteration field (e.g. Iteration)
+
+```bash
+# List field ID and all iteration IDs:
+gh project field-list <project-number> --owner <org-or-user> --format json \
+  | jq '.fields[] | select(.name == "Iteration") | {fieldId: .id, iterations: .configuration.iterations}'
+
+# Update:
+gh project item-edit \
+  --project-id <project-node-id> \
+  --id <item-node-id> \
+  --field-id <field-id> \
+  --iteration-id <iteration-id>
+```
+
+## 11. Update branch_link (text field)
 
 ```bash
 # First find the field ID for branch_link:

@@ -27,7 +27,11 @@ User: "work on issue #123"
 - **Status** — move it forward as work progresses
 - **Analysis comment** — post or update when analysis is done
 - **Development plan comment** — post when dev approach is confirmed
-- **`branch_link` attribute** — set when a feature branch is created
+- **Task Type** — set during analysis (Bug, Feature, Chore, etc.)
+- **Size** — set during analysis (inferred from complexity)
+- **Estimate** — set during analysis (numeric, inferred from size)
+- **Iteration** — set when development starts
+- **End date** — set when development starts
 
 ---
 
@@ -193,14 +197,37 @@ Wait for user confirmation or edits.
 gh issue comment <N> --repo <owner/repo> --body "<confirmed analysis>"
 ```
 
-### 4e. Update status → In Analysis
+### 4e. Update project fields
+
+After posting the analysis, update the project item with inferred values. Fetch available options first (use `github-status-helper.md` sections 7–8), then set:
+
+- **Task Type** — infer from the issue: Bug, Feature, Chore, or whichever option best fits. Pick the closest available option.
+- **Size** — infer from complexity: XS / S / M / L / XL (or whatever options the project has). Base on scope of change.
+- **Estimate** — infer a numeric estimate from size (e.g. S→1, M→3, L→5, XL→8). Use the project's configured scale if visible.
+
+Show the user what you're about to set and confirm:
+
+```
+I'll update these project fields:
+  Task Type → <value>
+  Size      → <value>
+  Estimate  → <value>
+
+OK to apply?
+```
+
+Apply on confirmation using `github-status-helper.md` sections 7 and 8.
+
+If a field isn't present on this project, skip it silently.
+
+### 4f. Update status → In Analysis
 
 Use `github-status-helper.md` commands to set status to `In Analysis` (if not already).
 
-### 4f. STOP
+### 4g. STOP
 
 ```
-Analysis posted to issue #<N>. Status set to "In Analysis".
+Analysis posted to issue #<N>. Project fields updated. Status set to "In Analysis".
 Review at: https://github.com/<owner>/<repo>/issues/<N>
 
 When you're ready to develop, say "develop" or "develop #<N>".
@@ -284,9 +311,26 @@ gh project item-edit \
   --text "issues/<N>-<short-description>"
 ```
 
-### 5d. Update status → In Progress
+### 5d. Update status and project fields → In Progress
 
 Use `github-status-helper.md` commands to set status to `In Progress` (if not already).
+
+Also set **Iteration** and **End date** if not already filled:
+
+- **Iteration** — list available iterations (section 10 of `github-status-helper.md`) and ask the user which one this work belongs to. If there is only one active iteration, default to it and confirm.
+- **End date** — ask the user for the target completion date (or suggest the end of the current iteration if known).
+
+Show combined prompt:
+
+```
+Before I start — a couple of project fields to set:
+  Iteration → <list available options, or suggest active one>
+  End date  → <suggest iteration end date, or ask>
+
+Confirm or adjust:
+```
+
+Apply using sections 9 and 10 of `github-status-helper.md`. Skip any field already set.
 
 ### 5e. Post start comment
 
@@ -369,7 +413,11 @@ Use `github-status-helper.md` commands to set status to `In Review`.
 | **Status** | At each phase transition (In Analysis → In Progress → In Review) |
 | **Analysis comment** | After analysis is confirmed by user |
 | **Development plan comment** | Before starting implementation, confirmed by user |
-| **`branch_link`** | When feature branch is created |
+| **Task Type** | End of analysis — infer from issue type |
+| **Size** | End of analysis — infer from complexity |
+| **Estimate** | End of analysis — infer from size |
+| **Iteration** | When development starts — ask user |
+| **End date** | When development starts — ask user or default to iteration end |
 
 ## Red Flags
 
