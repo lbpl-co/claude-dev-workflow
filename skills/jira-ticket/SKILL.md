@@ -17,7 +17,7 @@ Phase 1 — Analyse        Phase 2 — Develop
   Explore codebase           Create branch
   Post analysis comment      Implement (TDD)
   Transition → In Progress   Post milestone comments
-  STOP & wait                Invoke /cdv:bb-pr
+  STOP & wait                Create PR (manually or via git)
                              Post completion comment
                              Transition → In Review
 ```
@@ -184,11 +184,7 @@ Use the JIRA MCP tool `jira_add_comment` with:
 
 Keep it short — one sentence per milestone.
 
-### 2e. Create PR
-
-Invoke the `/cdv:bb-pr` skill. Pass ticket ID `PROJ-123` automatically — no need to ask the user.
-
-### 2f. Post completion comment to JIRA
+### 2e. Post completion comment to JIRA
 
 Use the JIRA MCP tool `jira_add_comment` with:
 - `issue_key`: PROJ-123
@@ -206,7 +202,7 @@ Use the JIRA MCP tool `jira_add_comment` with:
 **Tests:** <N> passing
 ```
 
-### 2g. Transition ticket → In Review
+### 2f. Transition ticket → In Review
 
 Use the JIRA MCP tool `jira_get_issue_transitions` with `issue_key`: PROJ-123.
 Find the transition whose name matches "In Review" (case-insensitive).
@@ -231,4 +227,4 @@ Use the JIRA MCP tool `jira_transition_issue` with `issue_key`: PROJ-123 and the
 ## Requirements
 
 - JIRA MCP (`sooperset/mcp-atlassian`) configured — see `SETUP.md`
-- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) configured — see `SETUP.md` (used by `/cdv:bb-pr` sub-step)
+- Bitbucket MCP (`aashari/mcp-server-atlassian-bitbucket`) configured — see `SETUP.md`

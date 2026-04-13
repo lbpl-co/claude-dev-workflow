@@ -120,7 +120,7 @@ Expected: Claude lists your open JIRA tickets. If you see an error, check the `J
 
 ## 4. MCP: Bitbucket (`aashari/mcp-server-atlassian-bitbucket`)
 
-**Required by:** `working-on-jira-ticket`, `create-pr`, `review-pr`
+**Required by:** `working-on-jira-ticket`, `review-pr`
 
 ### 4a. Create a Bitbucket App Password
 
@@ -249,7 +249,6 @@ Or test individual commands:
 |---------|-------------|----------|
 | `/cdv:gh-issue` | `/cdv:gh-issue #1` | Reads GitHub issue, checks status, confirms with you |
 | `/cdv:jira-ticket` | `/cdv:jira-ticket PROJ-123` | Reads JIRA ticket, posts analysis |
-| `/cdv:bb-pr` | `/cdv:bb-pr` (on a feature branch) | Drafts and creates PR on Bitbucket |
 | `/cdv:bb-prreview` | `/cdv:bb-prreview 42` | Fetches diff, prints structured review |
 
 ---
@@ -261,7 +260,6 @@ Or test individual commands:
 | `/cdv:setup` | Nothing — helps you set up everything else |
 | `/cdv:gh-issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
 | `/cdv:jira-ticket` | JIRA MCP (step 3) + Bitbucket MCP (step 4) |
-| `/cdv:bb-pr` | Bitbucket MCP (step 4) |
 | `/cdv:bb-prreview` | Bitbucket MCP (read + write) |
 
 ---

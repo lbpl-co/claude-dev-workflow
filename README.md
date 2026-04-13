@@ -1,6 +1,6 @@
 # CDV — Claude Dev Workflow
 
-A Claude Code plugin with slash commands for disciplined developer workflows: GitHub issue tracking, JIRA ticket management, Bitbucket PR creation, and code review.
+A Claude Code plugin with slash commands for disciplined developer workflows: GitHub issue tracking, JIRA ticket management, and Bitbucket PR review.
 
 ## Commands
 
@@ -9,7 +9,6 @@ A Claude Code plugin with slash commands for disciplined developer workflows: Gi
 | `/cdv:setup` | Interactive onboarding — pick your integrations, guided setup |
 | `/cdv:gh-issue #123` | Work on a GitHub issue (status-driven: analysis → development) |
 | `/cdv:jira-ticket PROJ-123` | Work on a JIRA ticket (two-phase: analyse → develop) |
-| `/cdv:bb-pr` | Create a structured Bitbucket PR from current branch |
 | `/cdv:bb-prreview 42` | Review a Bitbucket PR with inline comments |
 
 ## Install
@@ -38,5 +37,4 @@ Or see [SETUP.md](./SETUP.md) for manual setup instructions.
 |---------|-------|
 | `/cdv:gh-issue` | `gh` CLI + `GITHUB_TOKEN` + `jq` |
 | `/cdv:jira-ticket` | JIRA MCP + Bitbucket MCP |
-| `/cdv:bb-pr` | Bitbucket MCP |
 | `/cdv:bb-prreview` | Bitbucket MCP (read + write) |
