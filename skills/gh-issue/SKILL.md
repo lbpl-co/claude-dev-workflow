@@ -342,7 +342,34 @@ gh issue comment <N> --repo <owner/repo> --body "🚧 Starting implementation on
 
 Follow test-driven development: write tests first, then implementation.
 
-### 5g. Post milestone comments
+### 5g. Run tests before committing
+
+Before committing any code, detect and run the project's test suite:
+
+```bash
+# Detect test runner (use whichever matches the project):
+# npm test / yarn test / pytest / go test ./... / bundle exec rspec / etc.
+# Check package.json "test" script, Makefile, or common config files.
+```
+
+**If no test suite is found:** skip this step and note it in the completion comment.
+
+**If tests pass:**
+- Commit and push as normal.
+- Capture the result summary (number of tests, pass count) for the completion comment.
+
+**If tests fail:**
+- Show the failure output to the user and ask:
+  ```
+  Tests are failing:
+  <relevant failure output — trimmed to the key errors>
+
+  Commit anyway? (y/n)
+  ```
+- If the user says no: fix the failures before committing.
+- If the user says yes: commit with a note in the message that tests are failing, and flag it in the completion comment.
+
+### 5h. Post milestone comments
 
 After each significant milestone (tests passing, key component done):
 
@@ -352,7 +379,7 @@ gh issue comment <N> --repo <owner/repo> --body "✓ <milestone description>"
 
 One sentence per milestone.
 
-### 5h. Screenshot (if UI changed)
+### 5i. Screenshot (if UI changed)
 
 If the change affects visible UI:
 
@@ -366,12 +393,12 @@ curl -s -X POST \
   | jq -r '.url'
 ```
 
-### 5i. Finish branch and create PR
+### 5j. Finish branch and create PR
 
 Finish the branch: ensure all tests pass, commit all changes, push to remote.
 Include `Closes #<N>` in the PR body so GitHub auto-closes the issue on merge.
 
-### 5j. Post completion comment
+### 5k. Post completion comment
 
 ```bash
 gh issue comment <N> --repo <owner/repo> --body "$(cat <<'EOF'
@@ -383,16 +410,25 @@ gh issue comment <N> --repo <owner/repo> --body "$(cat <<'EOF'
 - <bullet 1>
 - <bullet 2>
 
-**Tests:** <N> passing
+**Tests:** <N> passed, <M> failed — `<test command used>`
+<details>
+<summary>Test output</summary>
+
+```
+<trimmed test output — last 30 lines or relevant summary>
+```
+</details>
 
 **Screenshot:** ![preview](<screenshot-url>)
 EOF
 )"
 ```
 
-Omit the Screenshot line if no UI changes.
+- Omit the Screenshot section if no UI changes.
+- Omit the `<details>` block if no test suite was found.
+- If tests were failing at commit time, replace the Tests line with: `⚠️ <N> failing — committed with user approval`.
 
-### 5k. Update status → In Review
+### 5l. Update status → In Review
 
 Use `github-status-helper.md` commands to set status to `In Review`.
 
