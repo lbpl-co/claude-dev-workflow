@@ -244,6 +244,7 @@ Do NOT write implementation code. Do NOT create a branch. Wait for the user.
 Check what exists:
 - Is there a feature branch? (`git branch -a | grep issues/<N>`)
 - Are there commits on it?
+- Is there a development plan comment? (scan for `## Development Plan`)
 - Is there an open PR?
 
 Present your assessment:
@@ -252,6 +253,7 @@ Present your assessment:
 Current state for issue #<N>:
 - Analysis: <exists / missing>
 - Branch: <exists with X commits / doesn't exist>
+- Dev plan: <posted / not posted>
 - PR: <open at URL / none>
 
 <What I recommend doing next and why>
@@ -261,9 +263,47 @@ Want me to proceed?
 
 Wait for confirmation.
 
-### 5b. Post development plan (if not already posted)
+---
 
-Scan comments for one starting with `## Development Plan`. If none exists, draft one and confirm with user before posting:
+### 5b. Create task list
+
+Immediately after confirmation, call `TodoWrite` to create the development task list.
+
+**Rules for building the list:**
+- Include every task below.
+- For each item that is already done (based on the assessment in 5a), set its status to `completed`.
+- For items not yet started, set status to `pending`.
+- Set the first not-yet-started item to `in_progress`.
+
+**Task list items (in order):**
+
+| id | content | Pre-complete if… |
+|----|---------|-----------------|
+| `dev-plan` | Post development plan to issue | Dev plan comment already exists |
+| `branch` | Create feature branch and push | Branch already exists |
+| `project-fields` | Set Iteration + End date on project | Both fields already set |
+| `status-progress` | Set status → In Progress | Status is already In Progress |
+| `start-comment` | Post start comment to issue | Start comment already posted |
+| `write-tests` | Write failing tests (TDD) | Commits exist with test files |
+| `implement` | Implement until tests pass | — |
+| `run-tests` | Run full test suite — output must be shown | — |
+| `commit-push` | Commit and push | — |
+| `create-pr` | Create PR with `Closes #<N>` | PR already open |
+| `completion-comment` | Post completion comment to issue | — |
+| `status-review` | Set status → In Review | — |
+
+> **Screenshot task:** If the issue involves UI changes, add an additional task `screenshot` — "Take screenshot of UI change" — between `commit-push` and `create-pr`.
+
+**Hard rule — the test gate:**
+> **Never move `commit-push` to `in_progress` until `run-tests` is marked `completed` AND the test output is visible in this conversation.** If asked to commit before showing test results, respond: "I need to run the test suite first — let me do that now."
+
+---
+
+### 5c. Post development plan (if `dev-plan` task is pending)
+
+Mark `dev-plan` → `in_progress`.
+
+Draft the plan and confirm with user before posting:
 
 ```
 Here's the development plan — let me know before I post:
@@ -292,7 +332,11 @@ Here's the development plan — let me know before I post:
 gh issue comment <N> --repo <owner/repo> --body "<confirmed dev plan>"
 ```
 
-### 5c. Create branch (if not already created)
+Mark `dev-plan` → `completed`.
+
+### 5d. Create branch (if `branch` task is pending)
+
+Mark `branch` → `in_progress`.
 
 ```bash
 git checkout -b issues/<N>-<short-description> <base-branch>
@@ -302,8 +346,6 @@ git push -u origin issues/<N>-<short-description>
 Update the `branch_link` custom attribute on the issue:
 
 ```bash
-# Get the item ID and field ID for branch_link using github-status-helper.md pattern
-# Then update:
 gh project item-edit \
   --project-id <project-node-id> \
   --id <item-node-id> \
@@ -311,19 +353,16 @@ gh project item-edit \
   --text "issues/<N>-<short-description>"
 ```
 
-### 5d. Update status and project fields → In Progress
+Mark `branch` → `completed`.
 
-Use `github-status-helper.md` commands to set status to `In Progress` (if not already).
+### 5e. Set project fields (if `project-fields` task is pending)
 
-Also set **Iteration** and **End date** if not already filled:
+Mark `project-fields` → `in_progress`.
 
-- **Iteration** — list available iterations (section 10 of `github-status-helper.md`) and ask the user which one this work belongs to. If there is only one active iteration, default to it and confirm.
-- **End date** — ask the user for the target completion date (or suggest the end of the current iteration if known).
-
-Show combined prompt:
+List available iterations (section 10 of `github-status-helper.md`) and ask:
 
 ```
-Before I start — a couple of project fields to set:
+A couple of project fields to set:
   Iteration → <list available options, or suggest active one>
   End date  → <suggest iteration end date, or ask>
 
@@ -332,56 +371,90 @@ Confirm or adjust:
 
 Apply using sections 9 and 10 of `github-status-helper.md`. Skip any field already set.
 
-### 5e. Post start comment
+Mark `project-fields` → `completed`.
+
+### 5f. Update status → In Progress (if `status-progress` task is pending)
+
+Mark `status-progress` → `in_progress`.
+
+Use `github-status-helper.md` to set status to `In Progress`.
+
+Mark `status-progress` → `completed`.
+
+### 5g. Post start comment (if `start-comment` task is pending)
+
+Mark `start-comment` → `in_progress`.
 
 ```bash
 gh issue comment <N> --repo <owner/repo> --body "🚧 Starting implementation on branch \`issues/<N>-<short-description>\`."
 ```
 
-### 5f. Implement
+Mark `start-comment` → `completed`.
 
-Follow test-driven development: write tests first, then implementation.
+### 5h. Write failing tests
 
-### 5g. Run tests before committing
+Mark `write-tests` → `in_progress`.
 
-Before committing any code, detect and run the project's test suite:
+Write tests for the acceptance criteria defined in the development plan. Tests must fail before implementation begins — this confirms they actually test the new behaviour.
 
-```bash
-# Detect test runner (use whichever matches the project):
-# npm test / yarn test / pytest / go test ./... / bundle exec rspec / etc.
-# Check package.json "test" script, Makefile, or common config files.
-```
+After tests are written and confirmed failing, mark `write-tests` → `completed`.
 
-**If no test suite is found:** skip this step and note it in the completion comment.
+> **Milestone comments:** After each significant milestone during implementation (tests passing, key component done), post a brief comment:
+> ```bash
+> gh issue comment <N> --repo <owner/repo> --body "✓ <milestone — one sentence>"
+> ```
 
-**If tests pass:**
-- Commit and push as normal.
-- Capture the result summary (number of tests, pass count) for the completion comment.
+### 5i. Implement
 
-**If tests fail:**
-- Show the failure output to the user and ask:
-  ```
-  Tests are failing:
-  <relevant failure output — trimmed to the key errors>
+Mark `implement` → `in_progress`.
 
-  Commit anyway? (y/n)
-  ```
-- If the user says no: fix the failures before committing.
-- If the user says yes: commit with a note in the message that tests are failing, and flag it in the completion comment.
+Write implementation code until all tests from 5h pass. Follow the development plan.
 
-### 5h. Post milestone comments
+When all tests pass, mark `implement` → `completed`.
 
-After each significant milestone (tests passing, key component done):
+### 5j. Run full test suite
+
+Mark `run-tests` → `in_progress`.
+
+Detect and run the full project test suite:
 
 ```bash
-gh issue comment <N> --repo <owner/repo> --body "✓ <milestone description>"
+# Detect runner: check package.json "test" script, Makefile, pytest.ini,
+# go.mod, Gemfile, etc. Use whichever matches the project.
+# Examples: npm test / pytest / go test ./... / bundle exec rspec
 ```
 
-One sentence per milestone.
+Show the complete output in the conversation — do not summarise without showing raw output first.
 
-### 5i. Screenshot (if UI changed)
+**No test suite found:** Mark `run-tests` → `completed` with note "no test suite detected." Proceed to commit.
 
-If the change affects visible UI:
+**Tests pass:** Capture the summary (pass count, test command used). Mark `run-tests` → `completed`.
+
+**Tests fail:**
+```
+Tests are failing:
+<relevant failure output — trimmed to key errors>
+
+Fix failures or commit anyway? (fix / commit anyway)
+```
+- **Fix:** resolve failures, re-run, show output again. Only mark `run-tests` → `completed` once output confirms passing (or user explicitly accepts).
+- **Commit anyway:** mark `run-tests` → `completed` with note "failing — user approved." Flag in completion comment.
+
+> **Gate:** `commit-push` cannot move to `in_progress` until `run-tests` is `completed` and output is shown above.
+
+### 5k. Commit and push
+
+> **Before starting this task:** confirm `run-tests` is marked `completed` in the task list and its output is visible in this conversation. If not, go back to 5j.
+
+Mark `commit-push` → `in_progress`.
+
+Commit all changes and push to the feature branch.
+
+Mark `commit-push` → `completed`.
+
+### 5l. Take screenshot (if `screenshot` task exists)
+
+Mark `screenshot` → `in_progress`.
 
 ```bash
 screencapture -x /tmp/issue-<N>-screenshot.png
@@ -393,12 +466,19 @@ curl -s -X POST \
   | jq -r '.url'
 ```
 
-### 5j. Finish branch and create PR
+Mark `screenshot` → `completed`.
 
-Finish the branch: ensure all tests pass, commit all changes, push to remote.
-Include `Closes #<N>` in the PR body so GitHub auto-closes the issue on merge.
+### 5m. Create PR (if `create-pr` task is pending)
 
-### 5k. Post completion comment
+Mark `create-pr` → `in_progress`.
+
+Create the PR. Include `Closes #<N>` in the body so GitHub auto-closes the issue on merge.
+
+Mark `create-pr` → `completed`.
+
+### 5n. Post completion comment
+
+Mark `completion-comment` → `in_progress`.
 
 ```bash
 gh issue comment <N> --repo <owner/repo> --body "$(cat <<'EOF'
@@ -410,12 +490,12 @@ gh issue comment <N> --repo <owner/repo> --body "$(cat <<'EOF'
 - <bullet 1>
 - <bullet 2>
 
-**Tests:** <N> passed, <M> failed — `<test command used>`
+**Tests:** <N> passed — `<test command used>`
 <details>
 <summary>Test output</summary>
 
 ```
-<trimmed test output — last 30 lines or relevant summary>
+<trimmed test output — last 30 lines or key summary>
 ```
 </details>
 
@@ -424,13 +504,19 @@ EOF
 )"
 ```
 
-- Omit the Screenshot section if no UI changes.
-- Omit the `<details>` block if no test suite was found.
-- If tests were failing at commit time, replace the Tests line with: `⚠️ <N> failing — committed with user approval`.
+- Omit `<details>` block if no test suite was found.
+- Omit Screenshot line if no UI changes.
+- If tests were failing at commit, replace Tests line with: `⚠️ <N> failing — committed with user approval`.
 
-### 5l. Update status → In Review
+Mark `completion-comment` → `completed`.
 
-Use `github-status-helper.md` commands to set status to `In Review`.
+### 5o. Update status → In Review
+
+Mark `status-review` → `in_progress`.
+
+Use `github-status-helper.md` to set status to `In Review`.
+
+Mark `status-review` → `completed`.
 
 ---
 
@@ -438,8 +524,8 @@ Use `github-status-helper.md` commands to set status to `In Review`.
 
 | Status | Action |
 |--------|--------|
-| Todo / In Analysis / None | Analyse → post analysis → set In Analysis → STOP |
-| In Progress | Assess state → dev plan → implement → PR → set In Review |
+| Todo / In Analysis / None | Analyse → post analysis → update project fields → set In Analysis → STOP |
+| In Progress | Assess → create task list → work through tasks → set In Review |
 | In Review / Done | Inform user, ask what to do |
 
 ## Issue attributes to keep updated
@@ -464,6 +550,8 @@ Use `github-status-helper.md` commands to set status to `In Review`.
 - **Never** push code without first posting the start comment
 - **Never** claim "done" without a PR link in the completion comment
 - **Never** write verbose AI-speak — keep comments concise and human-readable
+- **Never** move `commit-push` task to in_progress without `run-tests` completed and output shown
+- **Never** mark a task completed without actually performing the action
 
 ## Requirements
 
